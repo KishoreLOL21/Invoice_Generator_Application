@@ -37,7 +37,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/invoice")
+@CrossOrigin(origins = "https://your-app.vercel.app") // Allow requests from your front-end domain
 public class InvoiceController {
+
+    @Autowired
+    private ResourceLoader resourceLoader;
 
     @GetMapping("/form")
     public RedirectView getForm() {
@@ -60,7 +64,7 @@ public class InvoiceController {
         if (!file.isEmpty()) {
             try {
                 byte[] bytes = file.getBytes();
-                Path path = Paths.get("java/resources/static/Logo1.jpg");
+                Path path = Paths.get("src/main/resources/static/Logo1.jpg"); // Updated path
                 Files.write(path, bytes);
                 return "Logo uploaded successfully!";
             } catch (IOException e) {
@@ -70,10 +74,6 @@ public class InvoiceController {
             return "Logo file is empty.";
         }
     }
-
-
-    @Autowired
-    private ResourceLoader resourceLoader;
 
     @PostMapping("/generate")
     public void generateInvoice(@RequestBody Invoice invoice, HttpServletResponse response) throws IOException, WriterException {
@@ -411,7 +411,6 @@ public class InvoiceController {
         response.getOutputStream().write(outputStream.toByteArray());
     }
 
-
     private void addPageNumber(PDPageContentStream contentStream, int totalPages, int currentPage) throws IOException {
         contentStream.setFont(PDType1Font.HELVETICA, 10);
         contentStream.beginText();
@@ -434,7 +433,7 @@ public class InvoiceController {
 
         PDPageContentStream contentStream = new PDPageContentStream(document, page);
 
-        //Header Section:
+        // Header Section
         contentStream.setLineWidth(1);
         contentStream.setStrokingColor(0, 0, 0); // Set the stroke color to black
         contentStream.addRect(10, page.getMediaBox().getHeight() - 60, 50, 50);
@@ -479,7 +478,6 @@ public class InvoiceController {
 
         contentStream.newLineAtOffset(0, -20);
         contentStream.showText("Contact Number: " + invoice.getContactNumber());
-
 
         float startX = 0;
         float billFieldWidth = (page.getMediaBox().getWidth() - 2 * startX) / 3;
@@ -577,132 +575,5 @@ public class InvoiceController {
     private void saveInvoiceToJsonFile(Invoice invoice) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(new File("invoice.json"), invoice);
-    }
-}
-
-class Invoice {
-    private String companyName;
-    private String invoiceNumber;
-    private String billFrom;
-    private String billTo;
-    private String contactNumber;
-    private String gstNumber;
-    private String customerName;
-    private String invoiceDate;
-    private List<Item> items;
-
-    // Getters and setters
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public String getInvoiceNumber() {
-        return invoiceNumber;
-    }
-
-    public void setInvoiceNumber(String invoiceNumber) {
-        this.invoiceNumber = invoiceNumber;
-    }
-
-    public String getBillFrom() {
-        return billFrom;
-    }
-
-    public void setBillFrom(String billFrom) {
-        this.billFrom = billFrom;
-    }
-
-    public String getBillTo() {
-        return billTo;
-    }
-
-    public void setBillTo(String billTo) {
-        this.billTo = billTo;
-    }
-
-    public String getContactNumber() {
-        return contactNumber;
-    }
-
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
-    }
-
-    public String getGstNumber() {
-        return gstNumber;
-    }
-
-    public void setGstNumber(String gstNumber) {
-        this.gstNumber = gstNumber;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-    public String getInvoiceDate() {
-        return invoiceDate;
-    }
-
-    public void setInvoiceDate(String invoiceDate) {
-        this.invoiceDate = invoiceDate;
-    }
-
-    public List<Item> getItems() {
-        return items;
-    }
-
-    public void setItems(List<Item> items) {
-        this.items = items;
-    }
-}
-
-class Item {
-    private String description;
-    private int quantity;
-    private double unitPrice;
-    private double total;
-
-    // Getters and setters
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public double getUnitPrice() {
-        return unitPrice;
-    }
-
-    public void setUnitPrice(double unitPrice) {
-        this.unitPrice = unitPrice;
-    }
-
-    public double getTotal() {
-        return total;
-    }
-
-    public void setTotal(double total) {
-        this.total = total;
     }
 }
