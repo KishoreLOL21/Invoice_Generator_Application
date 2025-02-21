@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="invoiceApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to bottom, #340688, red);
+            font-family: Arial, sans-serif;
+        }
+
+        .wrapper {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            align-items: center;
+            padding: 10px;
+            background: linear-gradient(to bottom, #340688, red);
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 48.5%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 10px;
+            background: linear-gradient(to bottom, black, gray, white);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow-y: auto;
+            transition: all 0.5s ease;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .invoice-form {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        label {
+            margin-top: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="number"], input[type="date"] {
+            padding: 10px;
+            margin-top: 5px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 5px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        td {
+            background-color: #f9f9f9;
+        }
+
+        button {
+            padding: 10px;
+            margin-top: 20px;
+            cursor: pointer;
+            background: linear-gradient(to bottom, #44c409, rgb(238, 234, 24));
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .modal pre {
+            background: #333;
+            color: #fff;
+            padding: 20px;
+            width: 100%;
+            overflow: auto;
+            max-height: 70vh;
+            border-radius: 5px;
+        }
+
+        .close {
+            align-self: flex-end;
+            cursor: pointer;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+        }
+
+        .close:hover, .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+        }
+
+        .preview-pane {
+            flex: 1;
+            max-width: 45%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            background: linear-gradient(to bottom, #0b64ca, rgb(238, 234, 24));
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .preview-pane.hidden {
+            display: none;
+        }
+
+        .preview-active {
+            max-width: 55%;
+            justify-content: center;
+        }
+
+        .preview-inactive {
+            max-width: 45%;
+            justify-content: center;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .expanded {
+            max-width: 90%;
+            justify-content: center;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script>
+        var app = angular.module('invoiceApp', []);
+
+        app.controller('InvoiceController', ['$scope', '$http', function($scope, $http) {
+            $scope.invoice = {
+                companyLogo: null,
+                companyName: '',
+                invoiceNumber: '',
+                billFrom: 'Ninja Turtle Industries Gala No 5 8,2nd Fir, Shelay Industrial Estate, Udyog Nagar, Coregaon',
+                billTo: '',
+                contactNumber: '9046584736',
+                gstNumber: '24AADCP1453JAZZ',
+                customerName: '',
+                invoiceDate: '',
+                items: [
+                    { description: '', quantity: 1, unitPrice: 0, total: 0 }
+                ]
+            };
+
+            $scope.updateTotal = function(item) {
+                item.total = item.quantity * item.unitPrice;
+                $scope.calculateInvoiceTotal();
+            };
+
+            $scope.calculateInvoiceTotal = function() {
+                var total = 0;
+                for (var i = 0; i < $scope.invoice.items.length; i++) {
+                    total += $scope.invoice.items[i].total;
+                }
+                $scope.invoiceTotal = total;
+            };
+
+            $scope.addItem = function() {
+                $scope.invoice.items.push({ description: '', quantity: 1, unitPrice: 0, total: 0 });
+            };
+
+            $scope.removeItem = function(index) {
+                $scope.invoice.items.splice(index, 1);
+                $scope.calculateInvoiceTotal();
+            };
+
+            $scope.previewJSON = function() {
+                var modal = document.getElementById("jsonModal");
+                modal.style.display = "flex";
+            };
+
+            $scope.closeModal = function() {
+                var modal = document.getElementById("jsonModal");
+                modal.style.display = "none";
+            };
+
+            $scope.fileChanged = function(element) {
+                var file = element.files[0];
+                var reader = new FileReader();
+                reader.onload = function(event) {
+                    $scope.$apply(function() {
+                        $scope.invoice.companyLogo = event.target.result;
+                    });
+                };
+                reader.readAsDataURL(file);
+            };
+
+            $scope.generatePDF = function() {
+                $scope.uploadLogo();
+                $http.post('/api/invoice/generate', $scope.invoice, { responseType: 'arraybuffer' })
+                    .then(function(response) {
+                        var blob = new Blob([response.data], { type: 'application/json' });
+                        var url = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'invoice.json';
+                        a.click();
+                    }, function(error) {
+                        console.error('Error generating JSON:', error);
+                    });
+            };
+
+            $scope.uploadLogo = function() {
+                var logoData = $scope.invoice.companyLogo;
+                if (logoData) {
+                    $http.post('/api/invoice/uploadLogo', logoData)
+                        .then(function(response) {
+                            console.log('Logo uploaded successfully:', response);
+                        }, function(error) {
+                            console.error('Error uploading logo:', error);
+                        });
+                }
+            };
+
+            $scope.previewPDF = function() {
+                $http.post('/api/invoice/preview', $scope.invoice, { responseType: 'arraybuffer' })
+                    .then(function(response) {
+                        var blob = new Blob([response.data], { type: 'application/pdf' });
+                        var url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                    }, function(error) {
+                        console.error('Error generating PDF preview:', error);
+                    });
+            };
+
+            $scope.previewToPDF = function() {
+                document.getElementById('invoiceContainer').style.maxWidth = '48.5%';
+                $http.post('/api/invoice/preview', $scope.invoice, { responseType: 'arraybuffer' })
+                    .then(function(response) {
+                        var blob = new Blob([response.data], { type: 'application/pdf' });
+                        var url = URL.createObjectURL(blob);
+                        var iframe = document.getElementById('pdfIframe');
+                        iframe.src = url;
+                        document.getElementById('previewToPdf').classList.remove('hidden');
+                        document.getElementById('wrapper').classList.remove('expanded');
+                        console.log('Preview opened');
+                    }, function(error) {
+                        console.error('Error generating PDF preview:', error);
+                    });
+            };
+
+            $scope.uploadLogo = function() {
+                var logoData = $scope.invoice.companyLogo;
+                $http.post('/api/invoice/uploadLogo', logoData)
+                    .then(function(response) {
+                        console.log('Logo uploaded successfully:', response);
+                    }, function(error) {
+                        console.error('Error uploading logo:', error);
+                    });
+            };
+
+            $scope.generatePDF = function() {
+                $scope.uploadLogo();
+                $http.post('/api/invoice/generate', { invoice: $scope.invoice })
+                    .then(function(response) {
+                    }, function(error) {
+                        console.error('Error generating PDF:', error);
+                    });
+            };
+
+            $scope.closePreview = function() {
+                document.getElementById('previewToPdf').classList.add('hidden');
+                document.getElementById('wrapper').classList.add('expanded');
+                document.getElementById('invoiceContainer').style.maxWidth = '65%';
+                document.getElementById('invoiceContainer').style.justifyContent = 'flex-start';
+            };
+
+            $scope.$watch('invoice', function(newVal, oldVal) {
+                if (newVal !== oldVal) {
+                    $scope.previewToPDF();
+                }
+            }, true);
+
+            $scope.previewToPDF();
+        }]);
+
+        if (performance.navigation.type === 1) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</head>
+<body ng-controller="InvoiceController">
+<div class="wrapper" id="wrapper">
+    <div class="preview-pane" id="previewToPdf">
+        <iframe id="pdfIframe"></iframe>
+    </div>
+
+    <div class="container" id="invoiceContainer">
+        <h1>Invoice Form</h1>
+        <form class="invoice-form">
+            <label for="comapnyLogo">Upload Your Company Logo:</label>
+            <input type="file" id="companyLogo" ng-model="invoice.companyLogo" onchange="angular.element(this).scope().fileChanged(this)">
+
+            <label for="comapnyName">Company Name:</label>
+            <input type="text" id="comapnyName" ng-model="invoice.companyName">
+
+            <label for="invoiceNumber">Invoice Number:</label>
+            <input type="text" id="invoiceNumber" ng-model="invoice.invoiceNumber">
+
+            <label for="billFrom">Bill From:</label>
+            <input type="text" id="billFrom" ng-model="invoice.billFrom">
+
+            <label for="billTo">Bill To:</label>
+            <input type="text" id="billTo" ng-model="invoice.billTo">
+
+            <label for="contactNumber">Contact Number:</label>
+            <input type="text" id="contactNumber" ng-model="invoice.contactNumber">
+
+            <label for="gstNumber">GST Number:</label>
+            <input type="text" id="gstNumber" ng-model="invoice.gstNumber">
+
+            <label for="customerName">Customer Name:</label>
+            <input type="text" id="customerName" ng-model="invoice.customerName">
+
+            <label for="invoiceDate">Invoice Date:</label>
+            <input type="date" id="invoiceDate" ng-model="invoice.invoiceDate">
+
+            <label for="items">Items:</label>
+            <table>
+                <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="item in invoice.items">
+                    <td><input type="text" ng-model="item.description" placeholder="Description"></td>
+                    <td><input type="number" ng-model="item.quantity" ng-change="updateTotal(item)" placeholder="Quantity"></td>
+                    <td><input type="number" ng-model="item.unitPrice" ng-change="updateTotal(item)" placeholder="Unit Price"></td>
+                    <td><input type="number" ng-model="item.total" placeholder="Total" readonly></td>
+                    <td><button type="button" ng-click="removeItem($index)">Remove</button></td>
+                </tr>
+                </tbody>
+            </table>
+            <button type="button" ng-click="addItem()">Add Item</button>
+
+            <button type="button" ng-click="previewJSON()">Preview JSON</button>
+            <button type="button" ng-click="previewToPDF()">Preview Invoice</button>
+            <button type="button" ng-click="closePreview()" style="height: 50px; width: 160px">Close Preview</button>
+        </form>
+    </div>
+</div>
+
+<div id="jsonModal" class="modal">
+    <div class="modal-content">
+        <span class="close" ng-click="closeModal()">&times;</span>
+        <pre>{{ invoice | json }}</pre>
+        <div class="modal-footer">
+            <button ng-click="generatePDF()">Generate JSON</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

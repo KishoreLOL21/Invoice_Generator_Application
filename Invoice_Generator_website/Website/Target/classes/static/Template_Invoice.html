@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice Template</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+            padding: 10px;
+            background: linear-gradient(to bottom, #589e07, rgb(48, 221, 178));
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        #pdf-preview {
+            width: 80%;
+            height: 95vh;
+            border: none;
+        }
+
+        button {
+            padding: 10px;
+            margin-top: 20px;
+            width: 20%;
+            cursor: pointer;
+            background: linear-gradient(to bottom, #44c409, rgb(238, 234, 24));
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        function redirectPage() {
+            window.location.href = "secondPage.html"; // Relative path
+        }
+
+        if (performance.navigation.type === 1) {
+            window.location.href = 'index.html';
+        }
+
+        async function loadPDFPreview() {
+            try {
+                const response = await fetch('/api/invoice/previewTemplate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        companyName: "XXXXXXX",
+                        invoiceNumber: "XXXXXXX",
+                        billFrom: "XXXXXXX",
+                        billTo: "XXXXXXX",
+                        contactNumber: "XXXXXXX",
+                        gstNumber: "XXXXXXX",
+                        customerName: "XXXXXXX",
+                        invoiceDate: "XX-XX-XXXX",
+                        items: [
+                            { description: "Item 1", quantity: 1, unitPrice: 100.00, total: 100.00 },
+                            { description: "Item 2", quantity: 2, unitPrice: 50.00, total: 100.00 }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch PDF preview');
+                }
+
+                const pdfBlob = await response.blob();
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+
+                const iframe = document.getElementById('pdf-preview');
+                iframe.src = pdfUrl;
+            } catch (error) {
+                console.error('Error loading PDF preview:', error);
+            }
+        }
+
+        window.onload = loadPDFPreview;
+    </script>
+</head>
+<body>
+<div class="container">
+    <iframe id="pdf-preview"></iframe>
+    <button onclick="redirectPage()">Edit Invoice</button>
+</div>
+</body>
+</html>

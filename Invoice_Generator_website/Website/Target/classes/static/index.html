@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to bottom, #064388, rgb(216, 11, 172));
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+            padding: 10px;
+            background: linear-gradient(to bottom, #075a9e, rgb(207, 46, 140));
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .wrapper {
+            height: 50%;
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+            padding: 10px;
+            background: linear-gradient(to bottom, #39a5e4 10%, #00ff00 40%, #e933cb 100%);
+            overflow: hidden;
+            transition: all 0.5s ease;
+            border-radius: 30px;
+        }
+
+        #title_card {
+            text-align: center;
+            font-size: 55px;
+            margin-bottom: 20px;
+            color: white;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            font-weight: bolder;
+            font-stretch: expanded;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 40px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        label {
+            margin-top: 10px;
+            font-size: 30px;
+            color: white;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="number"], input[type="date"] {
+            width: 500px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            margin-top: 20px;
+            width: 20%;
+            cursor: pointer;
+            background: linear-gradient(to bottom, #44c409, rgb(238, 234, 24));
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        function redirectToInvoicePage() {
+            let ch = document.getElementById("invoiceType");
+            let val = ch.value;
+
+            if (val === "standard") {
+                window.location.href = "Template_Invoice.html"; // Relative path
+            } else {
+                window.location.href = "home.html"; // Relative path
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <p id="title_card">Online Invoice Generator</p>
+    <div class="wrapper">
+        <h1>Welcome to Invoice Generator</h1>
+        <label for="invoiceType">Select Your Invoice Type:</label>
+        <select name="invoiceType" id="invoiceType">
+            <option value="Null">Choose Your Option</option>
+            <option value="standard">Standard</option>
+            <option value="custom">Custom</option>
+        </select>
+        <button onclick="redirectToInvoicePage()">Go</button>
+    </div>
+</div>
+</body>
+</html>
