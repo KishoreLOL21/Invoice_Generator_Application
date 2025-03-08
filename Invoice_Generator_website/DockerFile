@@ -1,0 +1,14 @@
+# Use an official Java runtime as a base image
+FROM openjdk:17-jdk-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the JAR file to the container (update `your-app.jar` accordingly)
+COPY target/your-app.jar app.jar
+
+# Expose the application port (adjust if needed)
+EXPOSE 8080
+
+# Run the application
+CMD ["java", "-jar", "app.jar"]
