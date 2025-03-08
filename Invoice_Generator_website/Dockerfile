@@ -1,14 +1,13 @@
-# Use an official Java runtime as a base image
+# Use an official Java runtime as a base image for building
 FROM openjdk:17-jdk-slim AS build
 
 # Set the working directory for the build
-WORKDIR /Invoice_Generator_website
+WORKDIR /app
 
-# Copy the Maven project files
-COPY pom.xml ./
-COPY src ./src
+# Copy the entire project directory
+COPY . .
 
-# Build the project (Replace 'your-app' with the actual JAR name)
+# Install Maven and build the project (Replace 'your-app' with actual JAR name)
 RUN apt-get update && apt-get install -y maven && mvn clean package -DskipTests
 
 # Use a new image to run the application
